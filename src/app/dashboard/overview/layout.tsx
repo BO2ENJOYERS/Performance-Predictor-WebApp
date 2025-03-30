@@ -1,135 +1,116 @@
-import PageContainer from '@/components/layout/page-container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React from 'react';
+import PageContainer from '@/components/layout/page-container';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
-export default function OverViewLayout({
-  sales,
-  pie_stats,
-  bar_stats,
-  area_stats
-}: {
-  sales: React.ReactNode;
-  pie_stats: React.ReactNode;
-  bar_stats: React.ReactNode;
-  area_stats: React.ReactNode;
-}) {
+export default function WelcomeScreen() {
   return (
     <PageContainer>
-      <div className='flex flex-1 flex-col space-y-2'>
-        <div className='flex items-center justify-between space-y-2'>
-          <h2 className='text-2xl font-bold tracking-tight'>
-            Hi, Welcome back 👋
-          </h2>
-        </div>
-        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>
-                Total Revenue
+      {/* Hero section with background image */}
+      <div
+        className='relative flex min-h-screen w-full flex-col items-center justify-center px-4'
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)), url("https://images.unsplash.com/photo-1607417307790-5f3efc48ced3?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Main content */}
+        <div className='z-10 mx-auto max-w-3xl space-y-8 px-4 py-16'>
+          <h1 className='text-center text-5xl font-bold text-white'>
+            Football Talent Predictor
+          </h1>
+
+          <Card className='w-full bg-black/95 backdrop-blur-sm'>
+            <CardHeader>
+              <CardTitle className='text-center text-xl'>
+                Predict Player Potential Using Stats
               </CardTitle>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='2'
-                className='h-4 w-4 text-muted-foreground'
-              >
-                <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
-              </svg>
             </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>$45,231.89</div>
-              <p className='text-xs text-muted-foreground'>
-                +20.1% from last month
+            <CardContent className='space-y-4'>
+              <div className='mb-6 flex items-center justify-center'>
+                {/* Player silhouettes */}
+                <div className='mb-6 flex items-center justify-center'>
+                  <div className='flex -space-x-4'>
+                    <img
+                      src='/images/img.png'
+                      alt='Player 1'
+                      className='h-20 w-20 rounded-full object-cover'
+                    />
+                    <img
+                      src='/images/img_2.png'
+                      alt='Player 3'
+                      className='h-20 w-20 rounded-full object-cover'
+                    />
+                    <img
+                      src='/images/img_1.png'
+                      alt='Player 2'
+                      className='h-20 w-20 rounded-full object-cover'
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <p className='text-muted-foreground text-center'>
+                Our advanced AI system analyzes football player statistics over
+                multiple seasons to predict whether they have high potential for
+                future success.
               </p>
+
+              <div className='space-y-2'>
+                <h3 className='font-medium'>How it works:</h3>
+                <ul className='list-disc space-y-1 pl-5'>
+                  <li>Enter your player's stats from recent seasons</li>
+                  <li>Our model analyzes performance trends and patterns</li>
+                  <li>Get instant prediction on your player's potential</li>
+                  <li>Make informed decisions for your team or scouting</li>
+                </ul>
+              </div>
+
+              {/* Football icon */}
+              <div className='flex justify-center py-4'>
+                <img
+                  src='/images/football.png'
+                  alt='Football'
+                  className='h-12 w-12 object-cover'
+                />
+              </div>
+
+              <div className='flex justify-center pt-4'>
+                <Button
+                  asChild
+                  size='lg'
+                  className='bg-green-600 px-8 hover:bg-green-700'
+                >
+                  <Link href='/predict'>Predict Player Potential</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>
-                Subscriptions
-              </CardTitle>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='2'
-                className='h-4 w-4 text-muted-foreground'
-              >
-                <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-                <circle cx='9' cy='7' r='4' />
-                <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>+2350</div>
-              <p className='text-xs text-muted-foreground'>
-                +180.1% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Sales</CardTitle>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='2'
-                className='h-4 w-4 text-muted-foreground'
-              >
-                <rect width='20' height='14' x='2' y='5' rx='2' />
-                <path d='M2 10h20' />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>+12,234</div>
-              <p className='text-xs text-muted-foreground'>
-                +19% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Active Now</CardTitle>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='2'
-                className='h-4 w-4 text-muted-foreground'
-              >
-                <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
-              </svg>
-            </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>+573</div>
-              <p className='text-xs text-muted-foreground'>
-                +201 since last hour
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
-          <div className='col-span-4'>{bar_stats}</div>
-          <div className='col-span-4 md:col-span-3'>
-            {/* sales arallel routes */}
-            {sales}
+
+          <div className='mt-8 grid grid-cols-3 gap-4'>
+            <div className='flex flex-col items-center rounded-lg bg-white/20 p-4 text-white backdrop-blur-sm'>
+              <div className='text-3xl font-bold'>500+</div>
+              <div className='text-sm'>Players Analyzed</div>
+            </div>
+            <div className='flex flex-col items-center rounded-lg bg-white/20 p-4 text-white backdrop-blur-sm'>
+              <div className='text-3xl font-bold'>95%</div>
+              <div className='text-sm'>Prediction Accuracy</div>
+            </div>
+            <div className='flex flex-col items-center rounded-lg bg-white/20 p-4 text-white backdrop-blur-sm'>
+              <div className='text-3xl font-bold'>24/7</div>
+              <div className='text-sm'>Instant Results</div>
+            </div>
           </div>
-          <div className='col-span-4'>{area_stats}</div>
-          <div className='col-span-4 md:col-span-3'>{pie_stats}</div>
+
+          <div className='text-center text-sm text-white'>
+            This tool helps scouts, coaches and team managers identify promising
+            talents based on statistical analysis rather than subjective
+            assessment.
+          </div>
         </div>
       </div>
     </PageContainer>

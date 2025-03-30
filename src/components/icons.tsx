@@ -37,6 +37,7 @@ export type Icon = LucideIcon;
 
 export const Icons = {
   dashboard: LayoutDashboardIcon,
+  predict: Pizza,
   logo: Command,
   login: LogIn,
   close: X,

@@ -53,7 +53,7 @@ src/
 │ ├── (auth)/ # Auth route group
 │ │ ├── (signin)/
 │ ├── (dashboard)/ # Dashboard route group
-│ │ ├── layout.tsx
+│ │ ├── .layout.tsx
 │ │ ├── loading.tsx
 │ │ └── page.tsx
 │ └── api/ # API routes
