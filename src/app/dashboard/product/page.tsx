@@ -37,20 +37,13 @@ export default async function Page(props: pageProps) {
             description='Manage players in the database (Server side table functionalities.)'
           />
           <Link
-            href='/dashboard/player/predict'
+            href='/predict'
             className={cn(buttonVariants(), 'mr-2 text-xs md:text-sm')}
           >
             <UserPlus className='mr-2 h-4 w-4' /> Predict Potential
           </Link>
-          <Link
-            href='/dashboard/player/new'
-            className={cn(buttonVariants(), 'text-xs md:text-sm')}
-          >
-            <Plus className='mr-2 h-4 w-4' /> Add New
-          </Link>
         </div>
         <Separator />
-        <PlayerTableAction />
         <Suspense
           key={key}
           fallback={<DataTableSkeleton columnCount={7} rowCount={10} />}
