@@ -1,29 +1,49 @@
-import { Client } from 'pg';
-import { NextResponse } from 'next/server'; // Importing pg for PostgreSQL
+import { Pool } from 'pg';
+import { NextResponse } from 'next/server';
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL // Ensure the DATABASE_URL is defined in your .env file
+// Initialiser le pool de connexion
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
 });
 
-export async function GET(req: any, res: any) {
+export async function GET(request: { url: string | URL }) {
+  // Extraire les paramètres de pagination depuis l'URL
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  console.log(request.url);
+
+  const offset = (page - 1) * limit;
+
+  const client = await pool.connect();
+
   try {
-    // Connect to the PostgreSQL database
-    await client.connect();
+    // Obtenir le nombre total d'entrées
+    const countResult = await client.query('SELECT COUNT(*) FROM players');
+    const totalCount = parseInt(countResult.rows[0].count, 10);
 
-    // Fetch player data
-    const playersResult = await client.query('SELECT * FROM players');
+    // Récupérer les joueurs avec pagination
+    const players = await client.query(
+      'SELECT * FROM players ORDER BY id LIMIT $1 OFFSET $2',
+      [limit, offset]
+    );
 
-    // Extract players
-    const players = playersResult.rows;
-
-    // Return the players
-    return NextResponse.json({ players });
+    return NextResponse.json({
+      players: players.rows,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        pages: Math.ceil(totalCount / limit)
+      }
+    });
   } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch players' },
       { status: 500 }
     );
   } finally {
-    await client.end(); // Close the connection after the query is done
+    client.release();
   }
 }

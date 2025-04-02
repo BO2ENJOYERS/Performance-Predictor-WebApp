@@ -12,7 +12,7 @@ export async function GET() {
     const result = await pool.query(`
       SELECT column_name
       FROM information_schema.columns
-      WHERE table_name = 'players' -- Replace with your table name
+      WHERE table_name = 'players'
       ORDER BY ordinal_position;
     `);
 
@@ -26,7 +26,5 @@ export async function GET() {
       { error: 'Failed to fetch column names' },
       { status: 500 }
     );
-  } finally {
-    await pool.end();
   }
 }

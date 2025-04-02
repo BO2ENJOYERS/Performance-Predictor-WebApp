@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
@@ -21,31 +22,30 @@ import {
   DoubleArrowRightIcon
 } from '@radix-ui/react-icons';
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
-  PaginationState,
   useReactTable
 } from '@tanstack/react-table';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { parseAsInteger, useQueryState } from 'nuqs';
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<any>[];
-  data: TData[];
+interface DataTableProps {
+  columns: any[];
+  data: any[];
   totalItems: number;
   pageSizeOptions?: number[];
-  loading?: boolean;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable({
   columns,
   data,
   totalItems,
   pageSizeOptions = [10, 20, 30, 40, 50],
-  loading
-}: DataTableProps<TData, TValue>) {
+  onPageChange,
+  onPageSizeChange
+}: DataTableProps) {
   const [currentPage, setCurrentPage] = useQueryState(
     'page',
     parseAsInteger.withOptions({ shallow: false }).withDefault(1)
@@ -57,185 +57,156 @@ export function DataTable<TData, TValue>({
       .withDefault(10)
   );
 
-  const paginationState = {
-    pageIndex: currentPage - 1, // zero-based index for React Table
-    pageSize: pageSize
-  };
+  // Calcul du nombre total de pages
+  const pageCount = Math.max(1, Math.ceil(totalItems / pageSize));
 
-  const pageCount = Math.ceil(totalItems / pageSize);
-
-  const handlePaginationChange = (
-    updaterOrValue:
-      | PaginationState
-      | ((old: PaginationState) => PaginationState)
-  ) => {
-    const pagination =
-      typeof updaterOrValue === 'function'
-        ? updaterOrValue(paginationState)
-        : updaterOrValue;
-
-    setCurrentPage(pagination.pageIndex + 1); // converting zero-based index to one-based
-    setPageSize(pagination.pageSize);
-  };
-
+  // Initialisation de la table
   const table = useReactTable({
     data,
     columns,
-    pageCount: pageCount,
+    pageCount,
     state: {
-      pagination: paginationState
+      pagination: {
+        pageIndex: currentPage - 1, // `pageIndex` commence à 0
+        pageSize: pageSize
+      }
     },
-    onPaginationChange: handlePaginationChange,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    manualPagination: true,
-    manualFiltering: true
+    manualPagination: true
   });
 
+  // Synchroniser `currentPage` et `pageSize` avec `table.setPageIndex`
+  useEffect(() => {
+    table.setPageIndex(currentPage - 1);
+    table.setPageSize(pageSize);
+  }, [currentPage, pageSize, table]);
+
   return (
-    <div className='flex flex-1 flex-col space-y-4'>
-      <div className='relative flex flex-1'>
-        <div className='absolute top-0 right-0 bottom-0 left-0 flex overflow-scroll rounded-md border md:overflow-auto'>
-          <ScrollArea className='flex-1'>
-            <Table className='relative'>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
+    <div className='space-y-4'>
+      {/* Table with horizontal scrolling */}
+      <div className='relative w-full overflow-x-auto rounded-md border'>
+        <ScrollArea>
+          <ScrollBar orientation='horizontal' />
+          <Table className='min-w-full table-auto'>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className='whitespace-nowrap'>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {data.length > 0 ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className='whitespace-nowrap'>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
                     ))}
                   </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className='h-24 text-center'
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-            <ScrollBar orientation='horizontal' />
-          </ScrollArea>
-        </div>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length || 1}
+                    className='h-24 text-center'
+                  >
+                    No results found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </div>
 
-      <div className='flex flex-col items-center justify-end gap-2 space-x-2 py-2 sm:flex-row'>
-        <div className='flex w-full items-center justify-between'>
-          <div className='text-muted-foreground flex-1 text-sm'>
-            {totalItems > 0 ? (
-              <>
-                Showing{' '}
-                {paginationState.pageIndex * paginationState.pageSize + 1} to{' '}
-                {Math.min(
-                  (paginationState.pageIndex + 1) * paginationState.pageSize,
-                  totalItems
-                )}{' '}
-                of {totalItems} entries
-              </>
-            ) : (
-              'No entries found'
-            )}
-          </div>
-          <div className='flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8'>
-            <div className='flex items-center space-x-2'>
-              <p className='text-sm font-medium whitespace-nowrap'>
-                Rows per page
-              </p>
-              <Select
-                value={`${paginationState.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
-              >
-                <SelectTrigger className='h-8 w-[70px]'>
-                  <SelectValue placeholder={paginationState.pageSize} />
-                </SelectTrigger>
-                <SelectContent side='top'>
-                  {pageSizeOptions.map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+      {/* Pagination controls */}
+      <div className='flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0'>
+        <div className='text-muted-foreground text-sm'>
+          {totalItems > 0 ? (
+            <>
+              Showing {Math.min((currentPage - 1) * pageSize + 1, totalItems)}{' '}
+              to {Math.min(currentPage * pageSize, totalItems)} of {totalItems}{' '}
+              entries
+            </>
+          ) : (
+            'No entries'
+          )}
         </div>
-        <div className='flex w-full items-center justify-between gap-2 sm:justify-end'>
-          <div className='flex w-[150px] items-center justify-center text-sm font-medium'>
-            {totalItems > 0 ? (
-              <>
-                Page {paginationState.pageIndex + 1} of {table.getPageCount()}
-              </>
-            ) : (
-              'No pages'
-            )}
+
+        <div className='flex items-center space-x-6'>
+          <div className='flex items-center space-x-2'>
+            <p className='text-sm font-medium'>Rows per page</p>
+            <Select
+              value={`${pageSize}`}
+              onValueChange={(value) => {
+                setPageSize(Number(value));
+                onPageSizeChange?.(Number(value));
+              }}
+            >
+              <SelectTrigger className='h-8 w-[70px]'>
+                <SelectValue placeholder={pageSize} />
+              </SelectTrigger>
+              <SelectContent side='top'>
+                {pageSizeOptions.map((size) => (
+                  <SelectItem key={size} value={`${size}`}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
           <div className='flex items-center space-x-2'>
             <Button
-              aria-label='Go to first page'
-              variant='outline'
-              className='hidden h-8 w-8 p-0 lg:flex'
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <DoubleArrowLeftIcon className='h-4 w-4' aria-hidden='true' />
-            </Button>
-            <Button
-              aria-label='Go to previous page'
               variant='outline'
               className='h-8 w-8 p-0'
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
             >
-              <ChevronLeftIcon className='h-4 w-4' aria-hidden='true' />
+              <DoubleArrowLeftIcon className='h-4 w-4' />
             </Button>
             <Button
-              aria-label='Go to next page'
               variant='outline'
               className='h-8 w-8 p-0'
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
             >
-              <ChevronRightIcon className='h-4 w-4' aria-hidden='true' />
+              <ChevronLeftIcon className='h-4 w-4' />
+            </Button>
+            <div className='text-sm font-medium'>
+              Page {currentPage} of {pageCount}
+            </div>
+            <Button
+              variant='outline'
+              className='h-8 w-8 p-0'
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, pageCount))
+              }
+              disabled={currentPage >= pageCount}
+            >
+              <ChevronRightIcon className='h-4 w-4' />
             </Button>
             <Button
-              aria-label='Go to last page'
               variant='outline'
-              className='hidden h-8 w-8 p-0 lg:flex'
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
+              className='h-8 w-8 p-0'
+              onClick={() => setCurrentPage(pageCount)}
+              disabled={currentPage >= pageCount}
             >
-              <DoubleArrowRightIcon className='h-4 w-4' aria-hidden='true' />
+              <DoubleArrowRightIcon className='h-4 w-4' />
             </Button>
           </div>
         </div>
